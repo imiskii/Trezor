@@ -33,8 +33,7 @@ class SafeLock:
     def open_safe(self, key):
 
         if SafeLock.is_lock():
-            SF = SafeData()
-            SF.open_safe(key)
+            open_safe(key)
             # set that Safe was opened
             SafeLock.set_lock("0")
         
@@ -47,15 +46,14 @@ class SafeLock:
     # return: error msg or Success
     def lock_safe(self, file_path):
         
-        SF = SafeData()
-        new_key = SF.generate_key()
+        new_key = generate_key()
 
         # SAVE NEW KEY
         if not self.set_key(file_path, new_key):
             return "ERROR"
         
         # Encrypt folder
-        SF.lock_safe(new_key)
+        lock_safe(new_key)
         SafeLock.set_lock("1")
         return "Success"
     
@@ -132,65 +130,58 @@ class SafeLock:
         else:
             return False
 
-                 
-
-class SafeData:
-
-    def __init__(self):
-        self.key = None
-        self.hash = None
+                
 
 
-    ##
-    # Function generate new encryption key
-    # return: encryption key
-    def generate_key(self):
-        self.key = Fernet.generate_key()
-        return self.key
+##
+# Function generate new encryption key
+# return: encryption key
+def generate_key():
+    return Fernet.generate_key()
 
 
-    ##
-    # Function encrypt every file in Safe directory
-    def lock_safe(self, key):
+##
+# Function encrypt every file in Safe directory
+def lock_safe(key):
 
-        path = Path(__file__).parent / "../Safe"
+    path = Path(__file__).parent / "../Safe"
 
-        # Generate a Fernet key
-        fernet = Fernet(key)
+    # Generate a Fernet key
+    fernet = Fernet(key)
 
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                file_path = os.path.join(root, file)
-                # Open the file in read binary mode
-                with open(file_path, 'rb') as f:
-                    # Read the file's content
-                    file_data = f.read()
-                    # Encrypt the file's content
-                    encrypted_data = fernet.encrypt(file_data)
-                    # Write the encrypted content back to the file
-                    with open(file_path, 'wb') as f:
-                        f.write(encrypted_data)
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            # Open the file in read binary mode
+            with open(file_path, 'rb') as f:
+                # Read the file's content
+                file_data = f.read()
+                # Encrypt the file's content
+                encrypted_data = fernet.encrypt(file_data)
+                # Write the encrypted content back to the file
+                with open(file_path, 'wb') as f:
+                    f.write(encrypted_data)
 
-    
-    ##
-    # Function decrypt all data in Safe directory
-    def open_safe(self, key):
 
-        path = Path(__file__).parent / "../Safe"
+##
+# Function decrypt all data in Safe directory
+def open_safe(key):
 
-        # Generate a Fernet key
-        fernet = Fernet(key)
+    path = Path(__file__).parent / "../Safe"
 
-        # Iterate through all files in the folder
-        for root, dirs, files in os.walk(path):
-            for file in files:
-                file_path = os.path.join(root, file)
-                # Open the file in read binary mode
-                with open(file_path, 'rb') as f:
-                    # Read the file's content
-                    encrypted_data = f.read()
-                    # Decrypt the file's content
-                    decrypted_data = fernet.decrypt(encrypted_data)
-                    # Write the decrypted content back to the file
-                    with open(file_path, 'wb') as f:
-                        f.write(decrypted_data)                       
+    # Generate a Fernet key
+    fernet = Fernet(key)
+
+    # Iterate through all files in the folder
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            # Open the file in read binary mode
+            with open(file_path, 'rb') as f:
+                # Read the file's content
+                encrypted_data = f.read()
+                # Decrypt the file's content
+                decrypted_data = fernet.decrypt(encrypted_data)
+                # Write the decrypted content back to the file
+                with open(file_path, 'wb') as f:
+                    f.write(decrypted_data)                       
